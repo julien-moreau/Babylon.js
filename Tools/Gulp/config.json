@@ -222,7 +222,10 @@
       "../../src/Materials/babylon.colorCurves.js",
       "../../src/Materials/babylon.pbrMaterial.js",      
       "../../src/Debug/babylon.debugLayer.js",
-      "../../src/PostProcess/babylon.standardRenderingPipeline.js"
+      "../../src/PostProcess/babylon.standardRenderingPipeline.js",
+
+      "../../src/2d/babylon.container2d.js",
+      "../../src/2d/babylon.sprite2d.js"
     ]
   }
 }
