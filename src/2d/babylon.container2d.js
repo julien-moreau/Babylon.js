@@ -46,7 +46,7 @@ var BABYLON;
             else {
                 // Horizontal docking
                 if (this.dockState & DockState.LEFT) {
-                    this.position.x = -width / 2 + this.width + this._position2d.x * 2.0;
+                    this.position.x = -width / 2 + this.width + (this._position2d.x * 2.0) / width;
                 }
                 else if (this.dockState & DockState.RIGHT) {
                     this.position.x = width / 2 - this.width - this._position2d.x * 2.0;

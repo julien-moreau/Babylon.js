@@ -4,7 +4,6 @@ module BABYLON {
         public textures: Texture[] = [];
 
         public material: Material = null;
-        public geometry: Geometry = null;
 
         // Private members
         private _vertices: number[] = [];
@@ -137,7 +136,7 @@ module BABYLON {
             this.material = material;
         }
 
-        private _bindMaterial(mesh: Mesh) {
+        private _bindMaterial(mesh: Mesh): void {
             var material = this._getMaterial();
             var texture = this.textures[this._textureIndex];
 

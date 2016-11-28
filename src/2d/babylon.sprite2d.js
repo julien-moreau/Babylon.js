@@ -18,7 +18,6 @@ var BABYLON;
             // Public members
             this.textures = [];
             this.material = null;
-            this.geometry = null;
             // Private members
             this._vertices = [];
             this._vertexBuffer = null;
