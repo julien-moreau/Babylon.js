@@ -365,6 +365,27 @@
 
         }
 
+        public setRotation (rotation: Vector3, space = Space.LOCAL, mesh?: AbstractMesh): void {
+            
+            this.setYawPitchRoll(rotation.y, rotation.x, rotation.z, space, mesh);
+
+        }
+
+        public setRotationQuaternion (quat: Quaternion, space = Space.LOCAL, mesh?: AbstractMesh): void {
+
+            var rotMatInv = Tmp.Matrix[0];
+
+            this._getNegativeRotationToRef(rotMatInv, space, mesh);
+
+            var rotMat = Tmp.Matrix[1];
+            Matrix.FromQuaternionToRef(quat, rotMat);
+
+            rotMatInv.multiplyToRef(rotMat, rotMat);
+
+            this._rotateWithMatrix(rotMat, space, mesh);
+
+        }
+
         public setRotationMatrix (rotMat: Matrix, space = Space.LOCAL, mesh?: AbstractMesh): void {
 
             var rotMatInv = Tmp.Matrix[0];
@@ -588,17 +609,17 @@
 
             var result = Vector3.Zero();
 
-            this.getDirectionToRef(localAxis, result,  mesh);
+            this.getDirectionToRef(localAxis, mesh, result);
             
             return result;
 
         }
 
-        public getDirectionToRef (localAxis: Vector3, result: Vector3, mesh?: AbstractMesh): void {
+        public getDirectionToRef (localAxis: Vector3, mesh: AbstractMesh, result: Vector3): void {
 
             this._skeleton.computeAbsoluteTransforms();
             
-            var mat = BABYLON.Tmp.Matrix[0];
+            var mat = Tmp.Matrix[0];
 
             mat.copyFrom(this.getAbsoluteTransform());
 
@@ -612,17 +633,37 @@
 
         }
 
-        public getRotation(space = Space.LOCAL, mesh?: AbstractMesh): Quaternion {
+        public getRotation(space = Space.LOCAL, mesh?: AbstractMesh): Vector3 {
+
+            var result = Vector3.Zero();
+
+            this.getRotationToRef(space, mesh, result);
+            
+            return result;
+
+        }
+
+        public getRotationToRef(space = Space.LOCAL, mesh: AbstractMesh, result: Vector3): void {
+
+            var quat = Tmp.Quaternion[0];
+
+            this.getRotationQuaternionToRef(space, mesh, quat);
+            
+            quat.toEulerAnglesToRef(result);
+
+        }
+
+        public getRotationQuaternion(space = Space.LOCAL, mesh?: AbstractMesh): Quaternion {
 
             var result = Quaternion.Identity();
 
-            this.getRotationToRef(space, mesh, result);
+            this.getRotationQuaternionToRef(space, mesh, result);
 
             return result;
 
         }
 
-        public getRotationToRef( space = Space.LOCAL, mesh: AbstractMesh, result: Quaternion): void{
+        public getRotationQuaternionToRef( space = Space.LOCAL, mesh: AbstractMesh, result: Quaternion): void{
 
             if(space == Space.LOCAL){
 
@@ -634,19 +675,110 @@
                 var amat = this.getAbsoluteTransform();
 
                 if(mesh){
-
-                    var wmat = mesh.getWorldMatrix();
-                    amat.multiplyToRef(wmat, mat);
-
-                    mat.decompose(Tmp.Vector3[0], result, Tmp.Vector3[1]);
-
+                    amat.multiplyToRef(mesh.getWorldMatrix(), mat);
                 }else{
-
-                    amat.decompose(Tmp.Vector3[0], result, Tmp.Vector3[1]);
-
+                    mat.copyFrom(amat);
                 }
 
+                mat.m[0] *= this._scalingDeterminant;
+                mat.m[1] *= this._scalingDeterminant;
+                mat.m[2] *= this._scalingDeterminant;
+
+                mat.decompose(Tmp.Vector3[0], result, Tmp.Vector3[1]);
+
             }
+        }
+
+        public getRotationMatrix(space = Space.LOCAL, mesh: AbstractMesh): Matrix {
+
+            var result = Matrix.Identity();
+
+            this.getRotationMatrixToRef(space, mesh, result);
+
+            return result;
+
+        }
+
+        public getRotationMatrixToRef(space = Space.LOCAL, mesh: AbstractMesh, result: Matrix): void{
+
+            if(space == Space.LOCAL){
+
+                this.getLocalMatrix().getRotationMatrixToRef(result);
+
+            }else{
+
+                var mat = Tmp.Matrix[0];
+                var amat = this.getAbsoluteTransform();
+
+                if(mesh){
+                    amat.multiplyToRef(mesh.getWorldMatrix(), mat);
+                }else{
+                    mat.copyFrom(amat);
+                }
+
+                mat.m[0] *= this._scalingDeterminant;
+                mat.m[1] *= this._scalingDeterminant;
+                mat.m[2] *= this._scalingDeterminant;
+
+                mat.getRotationMatrixToRef(result);
+                
+            }
+
+        }
+
+        public getAbsolutePositionFromLocal(position:Vector3, mesh?:AbstractMesh): Vector3{
+
+            var result = Vector3.Zero();
+
+            this.getAbsolutePositionFromLocalToRef(position, mesh, result);
+
+            return result;
+
+        }
+
+        public getAbsolutePositionFromLocalToRef(position:Vector3, mesh:AbstractMesh, result:Vector3): void{
+
+            this._skeleton.computeAbsoluteTransforms();
+
+            var tmat = Tmp.Matrix[0];
+            
+            if (mesh) {
+                tmat.copyFrom(this.getAbsoluteTransform());
+                tmat.multiplyToRef(mesh.getWorldMatrix(), tmat);
+            }else{
+                tmat = this.getAbsoluteTransform();
+            }
+
+            Vector3.TransformCoordinatesToRef(position, tmat, result);
+
+        }
+
+        public getLocalPositionFromAbsolute(position:Vector3, mesh?:AbstractMesh): Vector3{
+
+            var result = Vector3.Zero();
+
+            this.getLocalPositionFromAbsoluteToRef(position, mesh, result);
+
+            return result;
+
+        }
+
+        public getLocalPositionFromAbsoluteToRef(position:Vector3, mesh:AbstractMesh, result:Vector3): void{
+
+            this._skeleton.computeAbsoluteTransforms();
+
+            var tmat = Tmp.Matrix[0];
+
+            tmat.copyFrom(this.getAbsoluteTransform());
+            
+            if (mesh) {
+                tmat.multiplyToRef(mesh.getWorldMatrix(), tmat);
+            }
+
+            tmat.invert();
+
+            Vector3.TransformCoordinatesToRef(position, tmat, result);
+
         }
 
     }

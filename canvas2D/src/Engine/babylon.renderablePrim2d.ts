@@ -27,6 +27,9 @@
                     // Only map if there's no category assigned to the instance data or if there's a category and it's in the given list
                     if (!attrib.category || categories.indexOf(attrib.category) !== -1) {
                         let index = effect.getAttributeLocationByName(attrib.attributeName);
+                        if (index === - 1) {
+                            throw new Error(`Attribute ${attrib.attributeName} was not found in Effect: ${effect.name}. It's certainly no longer used in the Effect's Shaders`);
+                        }
                         let iai = new InstancingAttributeInfo();
                         iai.index = index;
                         iai.attributeSize = attrib.size / 4; // attrib.size is in byte and we need to store in "component" (i.e float is 1, vec3 is 3)
@@ -920,7 +923,10 @@
         }
 
         private static _uV = new Vector2(1, 1);
-
+        private static _s = Vector3.Zero();
+        private static _r = Quaternion.Identity();
+        private static _t = Vector3.Zero();
+        private static _uV3 = new Vector3(1, 1, 1);
         /**
          * Update the instanceDataBase level properties of a part
          * @param part the part to update
@@ -953,9 +959,14 @@
             let ty = new Vector4(t.m[1] * 2 / h, t.m[5] * rgScale.y * 2 / h, 0/*t.m[9]*/, ((t.m[13] + offY) * rgScale.y * 2 / h) - 1);
 
             if (!this.applyActualScaleOnTransform()) {
+                t.m[0] = tx.x, t.m[4] = tx.y, t.m[12] = tx.w;
+                t.m[1] = ty.x, t.m[5] = ty.y, t.m[13] = ty.w;
                 let las = this.actualScale;
-                tx.x /= las.x;
-                ty.y /= las.y;
+                t.decompose(RenderablePrim2D._s, RenderablePrim2D._r, RenderablePrim2D._t);
+                let scale = new Vector3(RenderablePrim2D._s.x / las.x, RenderablePrim2D._s.y / las.y, 1);
+                t = Matrix.Compose(scale, RenderablePrim2D._r, RenderablePrim2D._t);
+                tx = new Vector4(t.m[0], t.m[4], 0, t.m[12]);
+                ty = new Vector4(t.m[1], t.m[5], 0, t.m[13]);
             }
 
             part.transformX = tx;
