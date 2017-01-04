@@ -193,6 +193,7 @@ gulp.task("build", ["shaders"], function () {
         .pipe(replace(decorateSearchRegex, ""))
         .pipe(addModuleExports("BABYLON"))
         .pipe(gulp.dest(config.build.outputDirectory))
+        .pipe(gulp.dest("../../../Editor/website/libs/preview bjs"))
         .pipe(rename(config.build.minFilename))
         .pipe(uglify())
         .pipe(optimisejs())

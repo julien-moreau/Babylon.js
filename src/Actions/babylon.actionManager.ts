@@ -430,13 +430,24 @@
 
             var parseParameter = (name: string, value: string, target: any, propertyPath: string): any => {
                 if (propertyPath === null) {
-                    // String, boolean or float
-                    var floatValue = parseFloat(value);
-
+                    // String, boolean or float, vector3 etc.
                     if (value === "true" || value === "false")
                         return value === "true";
-                    else
+                    else {
+                        if (value.indexOf(",") !== -1) {
+                            var floats = value.split(",");
+
+                            if (floats.length === 2) {
+                                return new Vector2(parseFloat(floats[0]), parseFloat(floats[1]));
+                            }
+                            else if (floats.length === 3) {
+                                return new Vector3(parseFloat(floats[0]), parseFloat(floats[1]), parseFloat(floats[2]));
+                            }
+                        }
+                        
+                        var floatValue = parseFloat(value);
                         return isNaN(floatValue) ? value : floatValue;
+                    }
                 }
 
                 var effectiveTarget = propertyPath.split(".");

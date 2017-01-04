@@ -38,6 +38,12 @@ module BABYLON {
             this._renderEffects[renderEffect._name] = renderEffect;
         }
 
+        public removeEffect(renderEffect: PostProcessRenderEffect): void {
+            if (this._renderEffects[renderEffect._name]) {
+                delete this._renderEffects[renderEffect._name];
+            }
+        }
+
         // private
 
         public _enableEffect(renderEffectName: string, cameras: Camera);
@@ -182,6 +188,31 @@ module BABYLON {
 
         public dispose() {
            // Must be implemented by children 
+        }
+
+        public serialize(): any {
+            var serializationObject: any = {};
+            serializationObject._cameras = [];
+
+            for (var camera in this._cameras) {
+                serializationObject._cameras.push(this._cameras[camera].name);
+            }
+
+            return serializationObject;
+        }
+
+        public static Parse(source: any, scene: Scene, rootUrl: string): PostProcessRenderPipeline {
+            var parsedPipeline: PostProcessRenderPipeline = Tools.Instantiate(source.customType).Parse(source, scene, rootUrl);
+            
+            for (var i = 0; i < source._cameras.length; i++) {
+                var camera = scene.getCameraByName(source._cameras[i]);
+
+                if (camera) {
+                    scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(parsedPipeline._name, camera);
+                }
+            }
+
+            return parsedPipeline;
         }
     }
 }

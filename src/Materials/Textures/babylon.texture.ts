@@ -322,7 +322,12 @@
             }
 
             if (parsedTexture.isCube) {
-                return CubeTexture.Parse(parsedTexture, scene, rootUrl);
+                if (parsedTexture.name.indexOf(".babylon.hdr") !== -1 || parsedTexture.name.indexOf(".hdr") !== -1) {
+                    return HDRCubeTexture.Parse(parsedTexture, scene, rootUrl);
+                }
+                else {
+                    return CubeTexture.Parse(parsedTexture, scene, rootUrl);
+                }
             }
 
             if (!parsedTexture.name && !parsedTexture.isRenderTarget) {

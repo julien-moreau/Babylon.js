@@ -151,6 +151,19 @@
             super.dispose();
         }
 
+        // Serialize rendering pipeline
+        public serialize(): any {
+            var serializationObject = SerializationHelper.Serialize(this, super.serialize());
+            serializationObject.customType = "BABYLON.SSAORenderingPipeline";
+
+            return serializationObject;
+        }
+
+        // Parse serialized pipeline
+        public static Parse(source: any, scene: Scene, rootUrl: string): SSAORenderingPipeline {
+            return SerializationHelper.Parse(() => new SSAORenderingPipeline(source._name, scene, source._ratio), source, scene, rootUrl);
+        }
+
         // Private Methods
         private _createBlurPostProcess(ratio: number): void {
             /*

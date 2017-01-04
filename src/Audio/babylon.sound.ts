@@ -44,6 +44,7 @@ module BABYLON {
         private _isOutputConnected = false;
         private _htmlAudioElement: HTMLAudioElement;
         private _urlType: string = "Unknown";
+        private _soundUrl: string;
 
         /**
         * Create a sound and attach it to a scene
@@ -81,6 +82,8 @@ module BABYLON {
                 this._playbackRate = options.playbackRate || 1;
                 this._streaming = options.streaming || false;
             }
+
+            if (typeof (urlOrArrayBuffer) === "string") this._soundUrl = urlOrArrayBuffer;
 
             if (Engine.audioEngine.canUseWebAudio) {
                 this._soundGain = Engine.audioEngine.audioContext.createGain();
@@ -593,7 +596,7 @@ module BABYLON {
         public serialize(): any {
             var serializationObject: any = {
                 name: this.name,
-                url: this.name,
+                url: this._soundUrl,
                 autoplay: this.autoplay,
                 loop: this.loop,
                 volume: this._volume,
