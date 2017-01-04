@@ -5,39 +5,40 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var BABYLON;
 (function (BABYLON) {
-    var Sprite2D = (function (_super) {
-        __extends(Sprite2D, _super);
+    var Sprite2DD = (function (_super) {
+        __extends(Sprite2DD, _super);
         // Static members
         /**
          * @constructor
          * @param {string} name - the name and id to be given to this node
-         * @param {BABYLON.Scene} the scene this node will be added to
+         * @param {BABYLON.Scene} - the scene this node will be added to
          */
-        function Sprite2D(name, scene) {
-            _super.call(this, name, scene);
+        function Sprite2DD(name, scene) {
+            var _this = _super.call(this, name, scene) || this;
             // Public members
-            this.textures = [];
-            this.material = null;
+            _this.textures = [];
+            _this.material = null;
             // Private members
-            this._vertices = [];
-            this._vertexBuffer = null;
-            this._indexBuffer = null;
-            this._textureIndex = 0;
+            _this._vertices = [];
+            _this._vertexBuffer = null;
+            _this._indexBuffer = null;
+            _this._textureIndex = 0;
             // Initialize
-            this.position.z = 1;
-            this._prepareBuffers();
-            this._createShaderMaterial();
+            _this.position.z = 1;
+            _this._prepareBuffers();
+            _this._createShaderMaterial();
+            return _this;
         }
         /**
          * Sets the only texture of the sprite
          */
-        Sprite2D.prototype.setTexture = function (texture) {
+        Sprite2DD.prototype.setTexture = function (texture) {
             this.setTextures([texture]);
         };
         /**
          * Sets the textures of the sprite
          */
-        Sprite2D.prototype.setTextures = function (textures) {
+        Sprite2DD.prototype.setTextures = function (textures) {
             var _this = this;
             this.textures = textures;
             this._textureIndex = 0;
@@ -47,42 +48,41 @@ var BABYLON;
                 var data = vertexBuffer.getData();
                 var width = _this.getEngine().getRenderWidth();
                 var height = _this.getEngine().getRenderHeight();
-                var ratio = width / height;
-                data[0] = _this.textures[0].getBaseSize().width / width * ratio;
+                data[0] = _this.textures[0].getBaseSize().width / width;
                 data[1] = _this.textures[0].getBaseSize().height / height;
-                data[3] = -_this.textures[0].getBaseSize().width / width * ratio;
+                data[3] = -_this.textures[0].getBaseSize().width / width;
                 data[4] = _this.textures[0].getBaseSize().height / height;
-                data[6] = -_this.textures[0].getBaseSize().width / width * ratio;
+                data[6] = -_this.textures[0].getBaseSize().width / width;
                 data[7] = -_this.textures[0].getBaseSize().height / height;
-                data[9] = _this.textures[0].getBaseSize().width / width * ratio;
+                data[9] = _this.textures[0].getBaseSize().width / width;
                 data[10] = -_this.textures[0].getBaseSize().height / height;
                 vertexBuffer.update(data);
             });
         };
-        Object.defineProperty(Sprite2D.prototype, "width", {
+        Object.defineProperty(Sprite2DD.prototype, "width", {
             get: function () {
                 var texture = this.textures[this._textureIndex];
                 if (texture) {
-                    return texture.getSize().width * this._scaling2d.x;
+                    return texture.getSize().width * this.scaling.x;
                 }
-                return this.getEngine().getRenderWidth() * this._scaling2d.x;
+                return this.getEngine().getRenderWidth() * this.scaling.x;
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Sprite2D.prototype, "height", {
+        Object.defineProperty(Sprite2DD.prototype, "height", {
             get: function () {
                 var texture = this.textures[this._textureIndex];
                 if (texture) {
-                    return texture.getSize().height * this._scaling2d.y;
+                    return texture.getSize().height * this.scaling.y;
                 }
-                return this.getEngine().getRenderWidth() * this._scaling2d.y;
+                return this.getEngine().getRenderWidth() * this.scaling.y;
             },
             enumerable: true,
             configurable: true
         });
         // Prepares the internal buffers
-        Sprite2D.prototype._prepareBuffers = function () {
+        Sprite2DD.prototype._prepareBuffers = function () {
             // VBO and indices
             var vertices = [
                 1, 1, 0,
@@ -105,15 +105,15 @@ var BABYLON;
             this._geometry = new BABYLON.Geometry(name, this.getScene(), vertexData, true, this);
         };
         // Creates the shader material
-        Sprite2D.prototype._createShaderMaterial = function () {
+        Sprite2DD.prototype._createShaderMaterial = function () {
             var _this = this;
             var material = this._getMaterial();
             if (material) {
                 material.dispose(true, false);
             }
             var shaderPath = {
-                vertex: "sprite2d",
-                fragment: "sprite2d"
+                vertex: "sprite2dd",
+                fragment: "sprite2dd"
             };
             var options = {
                 attributes: ["position", "uv"],
@@ -121,21 +121,24 @@ var BABYLON;
                 samplers: ["textureSampler"]
             };
             material = new BABYLON.ShaderMaterial(this.name + "_mat", this.getScene(), shaderPath, options);
-            material.onBind = function (mesh) { return _this._bindMaterial(mesh); };
+            material.onBind = function (mesh) { return _this._onBindMaterial(mesh); };
             this.material = material;
         };
-        Sprite2D.prototype._bindMaterial = function (mesh) {
+        Sprite2DD.prototype._onBindMaterial = function (mesh) {
             var material = this._getMaterial();
             var texture = this.textures[this._textureIndex];
             if (texture) {
                 material.setTexture("textureSampler", this.textures[this._textureIndex]);
                 material.setFloat("invertXY", texture._invertY ? -1.0 : 1.0);
             }
+            material.setMatrix("worldViewProjection", mesh.getWorldMatrix());
         };
-        Sprite2D.prototype._getMaterial = function () {
+        Sprite2DD.prototype._getMaterial = function () {
             return this.material;
         };
-        return Sprite2D;
-    }(BABYLON.Container2D));
-    BABYLON.Sprite2D = Sprite2D;
+        return Sprite2DD;
+    }(BABYLON.Container2DD));
+    BABYLON.Sprite2DD = Sprite2DD;
 })(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.sprite2d.js.map

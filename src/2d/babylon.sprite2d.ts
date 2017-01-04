@@ -1,5 +1,5 @@
 module BABYLON {
-    export class Sprite2D extends Container2D {
+    export class Sprite2DD extends Container2DD {
         // Public members
         public textures: Texture[] = [];
 
@@ -17,7 +17,7 @@ module BABYLON {
         /**
          * @constructor
          * @param {string} name - the name and id to be given to this node
-         * @param {BABYLON.Scene} the scene this node will be added to
+         * @param {BABYLON.Scene} - the scene this node will be added to
          */
         constructor(name: string, scene: Scene) {
             super(name, scene);
@@ -50,18 +50,16 @@ module BABYLON {
                 var width = this.getEngine().getRenderWidth();
                 var height = this.getEngine().getRenderHeight();
 
-                var ratio = width / height;
-
-                data[0] = this.textures[0].getBaseSize().width / width * ratio;
+                data[0] = this.textures[0].getBaseSize().width / width;
                 data[1] = this.textures[0].getBaseSize().height / height;
 
-                data[3] = -this.textures[0].getBaseSize().width / width * ratio;
+                data[3] = -this.textures[0].getBaseSize().width / width;
                 data[4] = this.textures[0].getBaseSize().height / height;
 
-                data[6] = -this.textures[0].getBaseSize().width / width * ratio;
+                data[6] = -this.textures[0].getBaseSize().width / width;
                 data[7] = -this.textures[0].getBaseSize().height / height;
 
-                data[9] = this.textures[0].getBaseSize().width / width * ratio;
+                data[9] = this.textures[0].getBaseSize().width / width;
                 data[10] = -this.textures[0].getBaseSize().height / height;
 
                 vertexBuffer.update(data);
@@ -71,19 +69,19 @@ module BABYLON {
         public get width(): number {
             var texture = this.textures[this._textureIndex];
             if (texture) {
-                return texture.getSize().width * this._scaling2d.x;
+                return texture.getSize().width * this.scaling.x;
             }
 
-            return this.getEngine().getRenderWidth() * this._scaling2d.x;
+            return this.getEngine().getRenderWidth() * this.scaling.x;
         }
 
         public get height(): number {
             var texture = this.textures[this._textureIndex];
             if (texture) {
-                return texture.getSize().height * this._scaling2d.y;
+                return texture.getSize().height * this.scaling.y;
             }
 
-            return this.getEngine().getRenderWidth() * this._scaling2d.y;
+            return this.getEngine().getRenderWidth() * this.scaling.y;
         }
 
         // Prepares the internal buffers
@@ -120,8 +118,8 @@ module BABYLON {
             }
 
             var shaderPath = {
-                vertex: "sprite2d",
-                fragment: "sprite2d"
+                vertex: "sprite2dd",
+                fragment: "sprite2dd"
             };
 
             var options = {
@@ -131,12 +129,12 @@ module BABYLON {
             };
 
             material = new ShaderMaterial(this.name + "_mat", this.getScene(), shaderPath, options);
-            material.onBind = (mesh: Mesh) => this._bindMaterial(mesh);
+            material.onBind = (mesh: Mesh) => this._onBindMaterial(mesh);
 
             this.material = material;
         }
 
-        private _bindMaterial(mesh: Mesh): void {
+        private _onBindMaterial(mesh: Mesh): void {
             var material = this._getMaterial();
             var texture = this.textures[this._textureIndex];
 
@@ -144,6 +142,8 @@ module BABYLON {
                 material.setTexture("textureSampler", this.textures[this._textureIndex]);
                 material.setFloat("invertXY", texture._invertY ? -1.0 : 1.0);
             }
+
+            material.setMatrix("worldViewProjection", mesh.getWorldMatrix());
         }
 
         private _getMaterial(): ShaderMaterial {
