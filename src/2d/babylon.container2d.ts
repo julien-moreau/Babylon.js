@@ -1,6 +1,11 @@
 module BABYLON {
     export abstract class Container2DD extends Mesh {
         // Public members
+        public x: number = 0;
+        public y: number = 0;
+
+        public scaleX: number = 1;
+        public scaleY: number = 1;
 
         // Private members
 
@@ -14,7 +19,7 @@ module BABYLON {
         }
 
         // Override render
-        public render(subMesh: SubMesh, enableAlphaMode: boolean): void {
+        public render(subMesh: SubMesh, enableAlphaMode: boolean): Mesh {
             // Disable depth buffer
             this.getEngine().setDepthBuffer(false);
 
@@ -23,27 +28,18 @@ module BABYLON {
 
             // Re-enable depth buffer
             this.getEngine().setDepthBuffer(true);
+
+            return this;
         }
-
-        public set x(x: number) { this.position.x = x; }
-        public get x(): number { return this.position.x; }
-        public set y(y: number) { this.position.y = y; }
-        public get y(): number { return this.position.y }
-
-        public set scaleX(x: number) { this.scaling.x = x }
-        public get scaleX() { return this.scaling.x }
-        public set scaleY(y: number) { this.scaling.y = y }
-        public get scaleY() { return this.scaling.y }
 
         public set scaleXY(xy: number) {
             this.scaling.x = this.scaling.y = xy;
         }
 
-        public set rotationZ(rotation: number) { this.rotation.z = rotation }
-        public get rotationZ() { return this.rotation.z }
+        public get rotationZ() { return this.rotation.z; }
+        public set rotationZ(value: number) { this.rotation.z = value; }
 
         public get width(): number { return 0 }
-
         public get height(): number { return 0 }
     }
 }

@@ -124,7 +124,7 @@ module BABYLON {
 
             var options = {
                 attributes: ["position", "uv"],
-                uniforms: ["worldViewProjection", "invertXY"],
+                uniforms: ["world", "invertXY"],
                 samplers: ["textureSampler"]
             };
 
@@ -136,14 +136,22 @@ module BABYLON {
 
         private _onBindMaterial(mesh: Mesh): void {
             var material = this._getMaterial();
+            
+            // Texture
             var texture = this.textures[this._textureIndex];
-
             if (texture) {
                 material.setTexture("textureSampler", this.textures[this._textureIndex]);
                 material.setFloat("invertXY", texture._invertY ? -1.0 : 1.0);
             }
 
-            material.setMatrix("worldViewProjection", mesh.getWorldMatrix());
+            // Set world matrix
+            var width = this.getEngine().getRenderWidth();
+            var height = this.getEngine().getRenderHeight();
+
+            this.position.x = this.x / width;
+            this.position.y = this.y / height;
+
+            material.setMatrix("world", mesh.getWorldMatrix());
         }
 
         private _getMaterial(): ShaderMaterial {

@@ -99,3 +99,5 @@ var BABYLON;
     }());
     BABYLON.Matrix3 = Matrix3;
 })(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=math2d.js.map

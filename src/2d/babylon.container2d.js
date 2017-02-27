@@ -7,7 +7,6 @@ var BABYLON;
 (function (BABYLON) {
     var Container2DD = (function (_super) {
         __extends(Container2DD, _super);
-        // Public members
         // Private members
         /**
          * @constructor
@@ -15,7 +14,13 @@ var BABYLON;
          * @param {BABYLON.Scene} - the scene this node will be added to
          */
         function Container2DD(name, scene) {
-            return _super.call(this, name, scene) || this;
+            var _this = _super.call(this, name, scene) || this;
+            // Public members
+            _this.x = 0;
+            _this.y = 0;
+            _this.scaleX = 1;
+            _this.scaleY = 1;
+            return _this;
         }
         // Override render
         Container2DD.prototype.render = function (subMesh, enableAlphaMode) {
@@ -25,31 +30,8 @@ var BABYLON;
             _super.prototype.render.call(this, subMesh, enableAlphaMode);
             // Re-enable depth buffer
             this.getEngine().setDepthBuffer(true);
+            return this;
         };
-        Object.defineProperty(Container2DD.prototype, "x", {
-            get: function () { return this.position.x; },
-            set: function (x) { this.position.x = x; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Container2DD.prototype, "y", {
-            get: function () { return this.position.y; },
-            set: function (y) { this.position.y = y; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Container2DD.prototype, "scaleX", {
-            get: function () { return this.scaling.x; },
-            set: function (x) { this.scaling.x = x; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Container2DD.prototype, "scaleY", {
-            get: function () { return this.scaling.y; },
-            set: function (y) { this.scaling.y = y; },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(Container2DD.prototype, "scaleXY", {
             set: function (xy) {
                 this.scaling.x = this.scaling.y = xy;
@@ -59,7 +41,7 @@ var BABYLON;
         });
         Object.defineProperty(Container2DD.prototype, "rotationZ", {
             get: function () { return this.rotation.z; },
-            set: function (rotation) { this.rotation.z = rotation; },
+            set: function (value) { this.rotation.z = value; },
             enumerable: true,
             configurable: true
         });
