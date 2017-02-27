@@ -27,8 +27,18 @@ interface Window {
     msURL: any;
 }
 
-interface AudioContext extends EventTarget {
-    decodeAudioData(audioData: ArrayBuffer, successCallback: DecodeSuccessCallback, errorCallback?: any): void;
+interface WebGLVertexArrayObject {
+
+}
+
+interface WebGLRenderingContext {
+    drawArraysInstanced(mode: number, first: number, count: number, primcount: number): void;
+    drawElementsInstanced(mode: number, count: number, type: number, offset: number, primcount: number): void;
+    vertexAttribDivisor(index: number, divisor: number): void;
+
+    createVertexArray(): any;
+    bindVertexArray(vao: WebGLVertexArrayObject): void;
+    deleteVertexArray(vao: WebGLVertexArrayObject): void;
 }
 
 interface HTMLURL {
@@ -60,6 +70,7 @@ interface CanvasRenderingContext2D {
     mozImageSmoothingEnabled: boolean;
     oImageSmoothingEnabled: boolean;
     webkitImageSmoothingEnabled: boolean;
+    msImageSmoothingEnabled: boolean;
 }
 
 interface WebGLTexture {

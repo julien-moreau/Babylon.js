@@ -5,6 +5,7 @@
     "minNoWorkerFilename": "babylon.noworker.js",
     "minCoreFilename": "babylon.core.js",
     "declarationFilename": "babylon.d.ts",
+    "declarationModuleFilename": "babylon.module.d.ts",
     "outputDirectory": "../../dist/preview release",
     "srcOutputDirectory": "../../src/"
   },
@@ -34,6 +35,7 @@
       "../../src/Culling/babylon.boundingBox.js",
       "../../src/Culling/babylon.boundingInfo.js",
       "../../src/Culling/babylon.ray.js",
+      "../../src/Culling/babylon.rayHelper.js",
       "../../src/Mesh/babylon.abstractMesh.js",
       "../../src/Lights/babylon.light.js",
       "../../src/Lights/babylon.pointLight.js",
@@ -159,10 +161,10 @@
       "../../src/Math/babylon.math.SIMD.js",
       "../../src/Tools/babylon.rectPackingMap.js",
       "../../src/Tools/babylon.dynamicFloatArray.js",
-      "../../src/Materials/Textures/babylon.fontTexture.js",
       "../../src/Materials/Textures/babylon.mapTexture.js",
       "../../src/Materials/babylon.shaderMaterial.js",
       "../../src/Tools/babylon.tools.dds.js",
+      "../../src/Tools/babylon.khronosTextureContainer.js",
       "../../src/Physics/Plugins/babylon.cannonJSPlugin.js",
       "../../src/Physics/Plugins/babylon.oimoJSPlugin.js",
       "../../src/PostProcess/babylon.displayPassPostProcess.js",
@@ -206,7 +208,6 @@
       "../../src/PostProcess/babylon.lensRenderingPipeline.js",
       "../../src/PostProcess/babylon.colorCorrectionPostProcess.js",
       "../../src/Cameras/babylon.stereoscopicCameras.js",
-      "../../src/Cameras/Holographic/babylon.holographicCamera.js",
       "../../src/PostProcess/babylon.hdrRenderingPipeline.js",
       "../../src/Rendering/babylon.edgesRenderer.js",
       "../../src/PostProcess/babylon.tonemapPostProcess.js",
@@ -439,7 +440,8 @@
         "../../loaders/src/glTF/babylon.glTFFileLoader.ts",
         "../../loaders/src/glTF/babylon.glTFFileLoaderUtils.ts",
         "../../loaders/src/glTF/babylon.glTFFileLoaderExtension.ts",
-        "../../loaders/src/glTF/babylon.glTFBinaryExtension.ts"
+        "../../loaders/src/glTF/babylon.glTFBinaryExtension.ts",
+        "../../loaders/src/glTF/babylon.glTFMaterialCommonExtension.ts"
       ],
       "output": "babylon.glTFFileLoader.js"
     }],
@@ -467,10 +469,13 @@
     "libraries": [  
     {
       "files": [
+        "../../canvas2D/src/Tools/babylon.math2D.ts",
         "../../canvas2D/src/Tools/babylon.IPropertyChanged.ts",
         "../../canvas2D/src/Tools/babylon.observableArray.ts",
         "../../canvas2D/src/Tools/babylon.observableStringDictionary.ts",
+        "../../canvas2D/src/Engine/babylon.fontTexture.ts",
         "../../canvas2D/src/Engine/babylon.bounding2d.ts",
+        "../../canvas2D/src/Engine/babylon.primitiveCollisionManager.ts",
         "../../canvas2D/src/Engine/babylon.canvas2dLayoutEngine.ts",
         "../../canvas2D/src/Engine/babylon.brushes2d.ts",
         "../../canvas2D/src/Engine/babylon.smartPropertyPrim.ts",
@@ -479,6 +484,7 @@
         "../../canvas2D/src/Engine/babylon.renderablePrim2d.ts",
         "../../canvas2D/src/Engine/babylon.shape2d.ts",
         "../../canvas2D/src/Engine/babylon.group2d.ts",
+        "../../canvas2D/src/Engine/babylon.wireFrame2d.ts",
         "../../canvas2D/src/Engine/babylon.rectangle2d.ts",
         "../../canvas2D/src/Engine/babylon.ellipse2d.ts",
         "../../canvas2D/src/Engine/babylon.sprite2d.ts",
@@ -538,6 +544,7 @@
         "../../inspector/src/tabs/MeshTab.ts",
         "../../inspector/src/tabs/SceneTab.ts",
         "../../inspector/src/tabs/ShaderTab.ts",
+        "../../inspector/src/tabs/ConsoleTab.ts",
         "../../inspector/src/tabs/StatsTab.ts",
         "../../inspector/src/tabs/TabBar.ts",
         "../../inspector/src/tools/AbstractTool.ts",

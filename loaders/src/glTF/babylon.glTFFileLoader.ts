@@ -166,14 +166,27 @@ module BABYLON {
                     continue;
                 }
 
-                var inputData = animation.parameters[sampler.input];
-                var outputData = animation.parameters[sampler.output];
+                var inputData: string = null;
+                var outputData: string = null;
+
+                if (animation.parameters) {
+                    inputData = animation.parameters[sampler.input];
+                    outputData = animation.parameters[sampler.output];
+                }
+                else {
+                    inputData = sampler.input;
+                    outputData = sampler.output;
+                }
 
                 var bufferInput = GLTFUtils.GetBufferFromAccessor(gltfRuntime, gltfRuntime.accessors[inputData]);
                 var bufferOutput = GLTFUtils.GetBufferFromAccessor(gltfRuntime, gltfRuntime.accessors[outputData]);
 
                 var targetID = channel.target.id;
                 var targetNode: any = gltfRuntime.scene.getNodeByID(targetID);
+
+                if (targetNode === null) {
+                    targetNode = gltfRuntime.scene.getNodeByName(targetID);
+                }
 
                 if (targetNode === null) {
                     Tools.Warn("Creating animation named " + anim + ". But cannot find node named " + targetID + " to attach to");
@@ -251,10 +264,6 @@ module BABYLON {
                         }
                         else if (targetPath === "rotationQuaternion") {
                             rotationQuaternion = value;
-                            // Y is Up
-                            if (GLTFFileLoader.MakeYUP) {
-                                rotationQuaternion = rotationQuaternion.multiply(new Quaternion(-0.707107, 0, 0, 0.707107));
-                            }
                         }
                         else {
                             scaling = value;
@@ -293,15 +302,11 @@ module BABYLON {
     */
     var configureBoneTransformation = (node: IGLTFNode): Matrix => {
         var mat: Matrix = null;
-        if (node.translation && node.rotation && node.scale) {
-            var scale = Vector3.FromArray(node.scale);
-            var rotation = Quaternion.FromArray(node.rotation);
-            var position = Vector3.FromArray(node.translation);
 
-            // Y is Up
-            if (GLTFFileLoader.MakeYUP) {
-                rotation = rotation.multiply(new Quaternion(-0.707107, 0, 0, 0.707107));
-            }
+        if (node.translation || node.rotation || node.scale) {
+            var scale = Vector3.FromArray(node.scale || [1, 1, 1]);
+            var rotation = Quaternion.FromArray(node.rotation || [0, 0, 0, 1]);
+            var position = Vector3.FromArray(node.translation || [0, 0, 0]);
 
             mat = Matrix.Compose(scale, rotation, position);
         }
@@ -318,7 +323,7 @@ module BABYLON {
     var getParentBone = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, jointName: string, newSkeleton: Skeleton): Bone => {
         // Try to find
         for (var i = 0; i < newSkeleton.bones.length; i++) {
-            if (newSkeleton.bones[i].id === jointName) {
+            if (newSkeleton.bones[i].name === jointName) {
                 return newSkeleton.bones[i];
             }
         }
@@ -486,10 +491,6 @@ module BABYLON {
         getNodesToRoot(gltfRuntime, newSkeleton, skins, nodesToRoot);
         newSkeleton.bones = [];
 
-        if (nodesToRoot.length === 0) {
-            newSkeleton.needInitialSkinMatrix = true;
-        }
-
         // Joints
         for (var i = 0; i < skins.jointNames.length; i++) {
             var jointNode = getJointNode(gltfRuntime, skins.jointNames[i]);
@@ -550,14 +551,7 @@ module BABYLON {
                 }
             }
 
-            if (!parentBone && nodesToRoot.length === 0) {
-                var inverseBindMatrix = Matrix.FromArray(buffer, i * 16);
-                var invertMesh = Matrix.Invert(mesh.getWorldMatrix());
-
-                mat = mat.multiply(mesh.getWorldMatrix());
-            }
-
-            var bone = new Bone(node.name, newSkeleton, parentBone, mat);
+            var bone = new Bone(node.jointName, newSkeleton, parentBone, mat);
             bone.id = id;
         }
 
@@ -713,7 +707,7 @@ module BABYLON {
 
                 // Sub material
                 var material = gltfRuntime.scene.getMaterialByID(primitive.material);
-                multiMat.subMaterials.push(material === null ? gltfRuntime.scene.defaultMaterial : material);
+                multiMat.subMaterials.push(material === null ? GLTFUtils.GetDefaultMaterial(gltfRuntime.scene) : material);
 
                 // Update vertices start and index start
                 verticesStarts.push(verticesStarts.length === 0 ? 0 : verticesStarts[verticesStarts.length - 1] + verticesCounts[verticesCounts.length - 2]);
@@ -723,7 +717,6 @@ module BABYLON {
 
         // Apply geometry
         geometry.setAllVerticesData(vertexData, false);
-
         newMesh.computeWorldMatrix(true);
 
         // Apply submeshes
@@ -771,7 +764,7 @@ module BABYLON {
     /**
     * Configures node from transformation matrix
     */
-    var configureNodeFromMatrix = (newNode: any, node: IGLTFNode) => {
+    var configureNodeFromMatrix = (newNode: Mesh, node: IGLTFNode, parent: Node) => {
         if (node.matrix) {
             var position = new Vector3(0, 0, 0);
             var rotation = new Quaternion();
@@ -779,26 +772,19 @@ module BABYLON {
             var mat = Matrix.FromArray(node.matrix);
             mat.decompose(scaling, rotation, position);
 
-            // Y is Up
-            if (GLTFFileLoader.MakeYUP) {
-                rotation = rotation.multiply(new Quaternion(-0.707107, 0, 0, 0.707107));
-            }
-
             configureNode(newNode, position, rotation, scaling);
-
-            if (newNode instanceof TargetCamera) {
-                (<TargetCamera>newNode).setTarget(Vector3.Zero());
-            }
         }
         else {
             configureNode(newNode, Vector3.FromArray(node.translation), Quaternion.FromArray(node.rotation), Vector3.FromArray(node.scale));
         }
+
+        newNode.computeWorldMatrix(true);
     };
 
     /**
     * Imports a node
     */
-    var importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string): Node => {
+    var importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string, parent: Node): Node => {
         var lastNode: Node = null;
 
         if (gltfRuntime.importOnlyMeshes && (node.skin || node.meshes)) {
@@ -821,10 +807,6 @@ module BABYLON {
                     if (!skin.babylonSkeleton) {
                         skin.babylonSkeleton = newMesh.skeleton;
                     }
-                }
-
-                if (newMesh.skeleton !== null) {
-                    //newMesh.useBones = true;
                 }
 
                 lastNode = newMesh;
@@ -945,8 +927,8 @@ module BABYLON {
         }
 
         if (lastNode !== null) {
-            if (node.matrix) {
-                configureNodeFromMatrix(lastNode, node);
+            if (node.matrix && lastNode instanceof Mesh) {
+                configureNodeFromMatrix(lastNode, node, parent);
             }
             else {
                 var translation = node.translation || [0, 0, 0];
@@ -956,7 +938,6 @@ module BABYLON {
             }
 
             lastNode.updateCache(true);
-
             node.babylonNode = lastNode;
         }
 
@@ -983,7 +964,7 @@ module BABYLON {
         }
 
         if (!node.jointName && meshIncluded) {
-            newNode = importNode(gltfRuntime, node, id);
+            newNode = importNode(gltfRuntime, node, id, parent);
 
             if (newNode !== null) {
                 newNode.id = id;
@@ -991,8 +972,10 @@ module BABYLON {
             }
         }
 
-        for (var i = 0; i < node.children.length; i++) {
-            traverseNodes(gltfRuntime, node.children[i], newNode, meshIncluded);
+        if (node.children) {
+            for (var i = 0; i < node.children.length; i++) {
+                traverseNodes(gltfRuntime, node.children[i], newNode, meshIncluded);
+            }
         }
     };
 
@@ -1003,8 +986,19 @@ module BABYLON {
         // Nodes
         var currentScene: IGLTFScene = <IGLTFScene>gltfRuntime.currentScene;
 
-        for (var i = 0; i < currentScene.nodes.length; i++) {
-            traverseNodes(gltfRuntime, currentScene.nodes[i], null);
+        if (currentScene) {
+            for (var i = 0; i < currentScene.nodes.length; i++) {
+                traverseNodes(gltfRuntime, currentScene.nodes[i], null);
+            }
+        }
+        else {
+            for (var thing in gltfRuntime.scenes) {
+                currentScene = <IGLTFScene>gltfRuntime.scenes[thing];
+
+                for (var i = 0; i < currentScene.nodes.length; i++) {
+                    traverseNodes(gltfRuntime, currentScene.nodes[i], null);
+                }
+            }
         }
 
         // Set animations
@@ -1020,6 +1014,8 @@ module BABYLON {
     * onBind shaderrs callback to set uniforms and matrices
     */
     var onBindShaderMaterial = (mesh: Mesh, gltfRuntime: IGLTFRuntime, unTreatedUniforms: Object, shaderMaterial: ShaderMaterial, technique: IGLTFTechnique, material: IGLTFMaterial, onSuccess: (shaderMaterial: ShaderMaterial) => void) => {
+        var materialValues = material.values || technique.parameters;
+
         for (var unif in unTreatedUniforms) {
             var uniform: IGLTFTechniqueParameter = unTreatedUniforms[unif];
             var type = uniform.type;
@@ -1041,13 +1037,13 @@ module BABYLON {
                 }
             }
             else {
-                var value = material.values[technique.uniforms[unif]];
+                var value = materialValues[technique.uniforms[unif]];
                 if (!value) {
                     continue;
                 }
 
                 if (type === EParameterType.SAMPLER_2D) {
-                    var texture: Texture = gltfRuntime.textures[value].babylonTexture;
+                    var texture: Texture = gltfRuntime.textures[material.values ? value : uniform.value].babylonTexture;
 
                     if (texture === null || texture === undefined) {
                         continue;
@@ -1069,7 +1065,7 @@ module BABYLON {
     * Loads the appropriate textures
     */
     var prepareShaderMaterialUniforms = (gltfRuntime: IGLTFRuntime, shaderMaterial: ShaderMaterial, technique: IGLTFTechnique, material: IGLTFMaterial, unTreatedUniforms: Object) => {
-        var materialValues = material.values;
+        var materialValues = material.values || technique.parameters;
         var techniqueUniforms = technique.uniforms;
 
         /**
@@ -1101,11 +1097,11 @@ module BABYLON {
 
             // Texture (sampler2D)
             if (type === EParameterType.SAMPLER_2D) {
-                GLTFFileLoaderExtension.LoadTextureAsync(gltfRuntime, <string>value, onLoadTexture(unif), () => onLoadTexture(null));
+                GLTFFileLoaderExtension.LoadTextureAsync(gltfRuntime, material.values ? value : uniform.value, onLoadTexture(unif), () => onLoadTexture(null));
             }
             // Others
             else {
-                if (uniform.value && GLTFUtils.SetUniform(shaderMaterial, unif, value, type)) {
+                if (uniform.value && GLTFUtils.SetUniform(shaderMaterial, unif, material.values ? value : uniform.value, type)) {
                     // Static uniform
                     delete unTreatedUniforms[unif];
                 }
@@ -1176,6 +1172,7 @@ module BABYLON {
     export class GLTFFileLoaderBase {
         public static CreateRuntime(parsedData: any, scene: Scene, rootUrl: string): IGLTFRuntime {
             var gltfRuntime: IGLTFRuntime = {
+                extensions: {},
                 accessors: {},
                 buffers: {},
                 bufferViews: {},
@@ -1192,8 +1189,9 @@ module BABYLON {
                 materials: {},
                 animations: {},
                 skins: {},
-                currentScene: {},
                 extensionsUsed: [],
+
+                scenes: {},
 
                 buffersCount: 0,
                 shaderscount: 0,
@@ -1212,6 +1210,10 @@ module BABYLON {
             }
 
             // Parse
+            if (parsedData.extensions) {
+                parseObject(parsedData.extensions, "extensions", gltfRuntime);
+            }
+
             if (parsedData.extensionsUsed) {
                 parseObject(parsedData.extensionsUsed, "extensionsUsed", gltfRuntime);
             }
@@ -1278,6 +1280,10 @@ module BABYLON {
 
             if (parsedData.skins) {
                 parseObject(parsedData.skins, "skins", gltfRuntime);
+            }
+
+            if (parsedData.scenes) {
+                gltfRuntime.scenes = parsedData.scenes;
             }
 
             if (parsedData.scene && parsedData.scenes) {
@@ -1475,7 +1481,7 @@ module BABYLON {
                 attributes: attributes,
                 uniforms: uniforms,
                 samplers: samplers,
-                needAlphaBlending: states.enable && states.enable.indexOf(3042) !== -1
+                needAlphaBlending: states && states.enable && states.enable.indexOf(3042) !== -1
             };
 
             Effect.ShadersStore[program.vertexShader + id + "VertexShader"] = newVertexShader;
@@ -1486,7 +1492,7 @@ module BABYLON {
             shaderMaterial.onCompiled = onShaderCompileSuccess(gltfRuntime, shaderMaterial, technique, material, unTreatedUniforms, onSuccess);
             shaderMaterial.sideOrientation = Material.CounterClockWiseSideOrientation;
 
-            if (states.functions) {
+            if (states && states.functions) {
                 var functions = states.functions;
                 if (functions.cullFace && functions.cullFace[0] !== ECullingType.BACK) {
                     shaderMaterial.backFaceCulling = false;
@@ -1537,8 +1543,8 @@ module BABYLON {
         /**
         * Static members
         */
-        public static MakeYUP: boolean = false;
         public static HomogeneousCoordinates: boolean = false;
+        public static IncrementalLoading: boolean = true;
 
         public static Extensions: { [name: string]: GLTFFileLoaderExtension } = {};
 
@@ -1602,10 +1608,14 @@ module BABYLON {
                     this._loadShadersAsync(gltfRuntime, () => {
                         importMaterials(gltfRuntime);
                         postLoad(gltfRuntime);
+
+                        if (!GLTFFileLoader.IncrementalLoading && onSuccess) {
+                            onSuccess(meshes, null, skeletons);
+                        }
                     });
                 });
 
-                if (onSuccess) {
+                if (GLTFFileLoader.IncrementalLoading && onSuccess) {
                     onSuccess(meshes, null, skeletons);
                 }
             }, onError);
@@ -1620,18 +1630,27 @@ module BABYLON {
             scene.useRightHandedSystem = true;
 
             GLTFFileLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, gltfRuntime => {
-                // Create nodes
-                this._createNodes(gltfRuntime);
+                // Load runtime extensios
+                GLTFFileLoaderExtension.LoadRuntimeExtensionsAsync(gltfRuntime, () => {
+                    // Create nodes
+                    this._createNodes(gltfRuntime);
 
-                // Load buffers, shaders, materials, etc.
-                this._loadBuffersAsync(gltfRuntime, () => {
-                    this._loadShadersAsync(gltfRuntime, () => {
-                        importMaterials(gltfRuntime);
-                        postLoad(gltfRuntime);
+                    // Load buffers, shaders, materials, etc.
+                    this._loadBuffersAsync(gltfRuntime, () => {
+                        this._loadShadersAsync(gltfRuntime, () => {
+                            importMaterials(gltfRuntime);
+                            postLoad(gltfRuntime);
+
+                            if (!GLTFFileLoader.IncrementalLoading) {
+                                onSuccess();
+                            }
+                        });
                     });
-                });
 
-                onSuccess();
+                    if (GLTFFileLoader.IncrementalLoading) {
+                        onSuccess();
+                    }
+                }, onError);
             }, onError);
 
             return true;
@@ -1717,8 +1736,21 @@ module BABYLON {
         private _createNodes(gltfRuntime: IGLTFRuntime): void {
             var currentScene = <IGLTFScene>gltfRuntime.currentScene;
 
-            for (var i = 0; i < currentScene.nodes.length; i++) {
-                traverseNodes(gltfRuntime, currentScene.nodes[i], null);
+            if (currentScene) {
+                // Only one scene even if multiple scenes are defined
+                for (var i = 0; i < currentScene.nodes.length; i++) {
+                    traverseNodes(gltfRuntime, currentScene.nodes[i], null);
+                }
+            }
+            else {
+                // Load all scenes
+                for (var thing in gltfRuntime.scenes) {
+                    currentScene = <IGLTFScene>gltfRuntime.scenes[thing];
+
+                    for (var i = 0; i < currentScene.nodes.length; i++) {
+                        traverseNodes(gltfRuntime, currentScene.nodes[i], null);
+                    }
+                }
             }
         }
     };

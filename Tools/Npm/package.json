@@ -15,14 +15,16 @@
   "main": "babylon.js",
   "files": [
     "babylon.d.ts",
+    "babylon.module.d.ts",
     "babylon.js",
     "babylon.max.js",
     "babylon.noworker.js",
     "babylon.core.js",
+    "babylon.canvas2d.js",
     "Oimo.js",
     "package.json"
   ],
-  "typings": "babylon.d.ts",
+  "typings": "babylon.module.d.ts",
   "keywords": [
     "3D",
     "javascript",
