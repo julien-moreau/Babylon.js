@@ -810,7 +810,6 @@
         // Serialize rendering pipeline
         public serialize(): any {
             var serializationObject = SerializationHelper.Serialize(this, super.serialize());
-
             serializationObject.customType = "StandardRenderingPipeline";
 
             return serializationObject;
@@ -827,6 +826,5 @@
 
         // Luminance steps
         public static LuminanceSteps: number = 6;
-
     }
 }
