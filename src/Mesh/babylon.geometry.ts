@@ -22,7 +22,6 @@
         public _delayLoadingFunction: (any: any, geometry: Geometry) => void;
         public _softwareSkinningRenderId: number;
         private _vertexArrayObjects: { [key: string]: WebGLVertexArrayObject; };
-        private _updatable: boolean;
 
         // Cache
         public _positions: Vector3[];
