@@ -302,6 +302,7 @@ module BABYLON {
                 for (var j = HDRRenderingPipeline.LUM_STEPS - 1; j >= 0; j--) {
                     this._downSamplePostProcesses[j].dispose(camera);
                 }
+
                 this._hdrPostProcess.dispose(camera);
             }
 
