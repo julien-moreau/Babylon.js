@@ -809,7 +809,7 @@
 
         // Serialize rendering pipeline
         public serialize(): any {
-            var serializationObject = SerializationHelper.Serialize(this);
+            var serializationObject = SerializationHelper.Serialize(this, super.serialize());
             serializationObject.customType = "StandardRenderingPipeline";
 
             return serializationObject;
