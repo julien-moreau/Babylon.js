@@ -1,4 +1,5 @@
 /// <reference path="RenderPipeline\babylon.postProcessRenderPipeline.ts" />
+
 module BABYLON {
     export interface IHDRRenderingPipelineRatio {
         blurRatio: number;
