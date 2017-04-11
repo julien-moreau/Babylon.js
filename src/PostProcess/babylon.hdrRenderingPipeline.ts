@@ -1,5 +1,4 @@
 /// <reference path="RenderPipeline\babylon.postProcessRenderPipeline.ts" />
-
 module BABYLON {
     export interface IHDRRenderingPipelineRatio {
         blurRatio: number;
@@ -299,11 +298,9 @@ module BABYLON {
                 this._textureAdderPostProcess.dispose(camera);
 
                 this._toneMappingPostProcess.dispose(camera);
-
                 for (var j = HDRRenderingPipeline.LUM_STEPS - 1; j >= 0; j--) {
                     this._downSamplePostProcesses[j].dispose(camera);
                 }
-
                 this._hdrPostProcess.dispose(camera);
             }
 
