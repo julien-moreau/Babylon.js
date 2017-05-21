@@ -197,7 +197,8 @@ gulp.task("build", ["shaders"], function () {
         .pipe(rename(config.build.minFilename))
         .pipe(uglify())
         .pipe(optimisejs())
-        .pipe(gulp.dest(config.build.outputDirectory));
+        .pipe(gulp.dest(config.build.outputDirectory))
+        .pipe(gulp.dest("../../../Editor/website/libs/preview bjs"));
 });
 
 /*
