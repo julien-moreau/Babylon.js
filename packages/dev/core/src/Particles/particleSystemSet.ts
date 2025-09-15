@@ -9,6 +9,7 @@ import { ParticleSystem } from "../Particles/particleSystem";
 import type { Scene, IDisposable } from "../scene";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import type { Vector3 } from "../Maths/math.vector";
+import { Tools } from "../Misc";
 
 /** Internal class used to store shapes for emitters */
 class ParticleSystemSetEmitterCreationOptions {
@@ -26,6 +27,16 @@ export class ParticleSystemSet implements IDisposable {
      * Only used when parsing particle systems from JSON, not part of the core assets
      */
     public static BaseAssetsUrl = "https://assets.babylonjs.com/particles";
+
+    /**
+     * The id of the Particle system set.
+     */
+    public id: string;
+
+    /**
+     * The friendly name of the Particle system set.
+     */
+    public name: string;
 
     private _emitterCreationOptions: ParticleSystemSetEmitterCreationOptions;
     private _emitterNode: Nullable<AbstractMesh | Vector3>;
@@ -56,6 +67,18 @@ export class ParticleSystemSet implements IDisposable {
         }
 
         this._emitterNode = value;
+    }
+
+    /**
+     * Instantiates a new particle system set.
+     * @param scene The scene the particle system set belongs to
+     * @param name The name of the particle system set
+     */
+    constructor(scene?: Scene, name: string = Tools.RandomId()) {
+        this.id = name;
+        this.name = name;
+
+        scene?.particleSystemSets.push(this);
     }
 
     /**
@@ -133,7 +156,10 @@ export class ParticleSystemSet implements IDisposable {
      * @returns a JSON compatible representation of the set
      */
     public serialize(serializeTexture = false): any {
-        const result: any = {};
+        const result: any = {
+            id: this.id,
+            name: this.name,
+        };
 
         result.systems = [];
         for (const system of this.systems) {
@@ -162,7 +188,10 @@ export class ParticleSystemSet implements IDisposable {
         scene = scene || EngineStore.LastCreatedScene;
 
         for (const system of data.systems) {
-            result.systems.push(gpu ? GPUParticleSystem.Parse(system, scene, rootUrl, true, capacity) : ParticleSystem.Parse(system, scene, rootUrl, true, capacity));
+            const particleSystem = gpu ? GPUParticleSystem.Parse(system, scene, rootUrl, true, capacity) : ParticleSystem.Parse(system, scene, rootUrl, true, capacity);
+            particleSystem._sourceParticleSystemSet = result;
+
+            result.systems.push(particleSystem);
         }
 
         if (data.emitter) {

@@ -12,6 +12,7 @@ import { Tags } from "./Misc/tags";
 import type { Vector2, Vector4 } from "./Maths/math.vector";
 import { Vector3, Matrix, TmpVectors } from "./Maths/math.vector";
 import type { IParticleSystem } from "./Particles/IParticleSystem";
+import type { ParticleSystemSet } from "./Particles/particleSystemSet";
 import { ImageProcessingConfiguration } from "./Materials/imageProcessingConfiguration";
 import { UniformBuffer } from "./Materials/uniformBuffer";
 import { PickingInfo } from "./Collisions/pickingInfo";
@@ -446,6 +447,12 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/particle_system_intro
      */
     public particleSystems: IParticleSystem[] = [];
+
+    /**
+     * All of the particle systems sets added to this scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/particleHelper/
+     */
+    public particleSystemSets: ParticleSystemSet[] = [];
 
     /**
      * Gets the current delta time used by animation engine
